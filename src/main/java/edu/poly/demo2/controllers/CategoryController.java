@@ -23,13 +23,30 @@ public class CategoryController {
     private final CategoriService categoriService;
 
     @PostMapping("")
-    public ResponseEntity<String> createCategory(
-           ) {
+    public ResponseEntity<ResponseObject> createCategory(
+            @Valid @RequestBody CategoryDTO categoryDTO,
+            BindingResult result) {
+        if(result.hasErrors()) {
+            List<String> errorMessages = result.getFieldErrors()
+                    .stream()
+                    .map(FieldError::getDefaultMessage)
+                    .toList();
+            return ResponseEntity.ok().body(ResponseObject.builder()
+                    .message(errorMessages.toString())
+                    .status(HttpStatus.BAD_REQUEST)
+                    .data(null)
+                    .build());
 
-        return ResponseEntity.ok("hello");
+        }
+        Category category = categoriService.createCategory(categoryDTO);
+        return ResponseEntity.ok().body(ResponseObject.builder()
+                .message("Create category successfully")
+                .status(HttpStatus.OK)
+                .data(category)
+                .build());
     }
 
-    @GetMapping("")
+    @GetMapping("get")
     public ResponseEntity<ResponseObject> getAllCategories(
             @RequestParam("page")     int page,
             @RequestParam("limit")    int limit
